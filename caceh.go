@@ -37,7 +37,7 @@ func NewCache(defaultExpiration, gcInterval time.Duration) *Cache {
 		items:             map[string]Item{},
 		stopGC:            make(chan bool),
 	}
-	go c.gcLoop() // 启动一个gorountine用于清理过期数据项
+	go c.gcLoop() // 启动一个goroutine用于清理过期数据项
 	return c
 }
 
