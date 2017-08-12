@@ -22,24 +22,24 @@ type Cache struct {
 	items             map[string]Item
 	mu                sync.RWMutex
 	defaultExpiration time.Duration
-	cleanInterval     time.Duration
-	stopClean         chan bool
+	gcInterval        time.Duration
+	stopGC            chan bool
 }
 
 // 创建缓存实例
-func NewCache(defaultExpiration, cleanInterval time.Duration) *Cache {
+func NewCache(defaultExpiration, gcInterval time.Duration) *Cache {
 	c := &Cache{
 		defaultExpiration: defaultExpiration,
-		cleanInterval:     cleanInterval,
+		gcInterval:        gcInterval,
 		items:             map[string]Item{},
-		stopClean:         make(chan bool),
+		stopGC:            make(chan bool),
 	}
-	go c.cleanLoop() // 启动一个gorountine用于清理过期数据项
+	go c.gcLoop() // 启动一个gorountine用于清理过期数据项
 	return c
 }
 
 // 清理过期数据项
-func (c *Cache) CleanExpired() {
+func (c *Cache) GcExpired() {
 	now := time.Now().UnixNano()
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -90,8 +90,21 @@ func (c *Cache) Delete(k string) {
 	c.mu.Unlock()
 }
 
-func (c *Cache) StopClean() {
-	c.stopClean <- true
+// 清空缓存
+func (c *Cache) Clean(){
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.items = map[string]Item{}
+}
+
+func (c *Cache) Count() int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return len(c.items)
+}
+
+func (c *Cache) StopGC() {
+	c.stopGC <- true
 }
 
 // 删除数据项
@@ -125,13 +138,13 @@ func (c *Cache) set(k string, v interface{}, d time.Duration) {
 	}
 }
 
-func (c *Cache) cleanLoop() {
-	ticker := time.NewTicker(c.cleanInterval)
+func (c *Cache) gcLoop() {
+	ticker := time.NewTicker(c.gcInterval)
 	for {
 		select {
 		case <-ticker.C:
-			c.CleanExpired()
-		case <-c.stopClean:
+			c.GcExpired()
+		case <-c.stopGC:
 			ticker.Stop()
 			return
 		}
