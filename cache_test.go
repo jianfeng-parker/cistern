@@ -21,6 +21,7 @@ func TestCache_Get(t *testing.T) {
 	}
 }
 
+// 过期数据不该被GET到
 func TestCache_Get_With_Expiration(t *testing.T) {
 	defaultExpired, _ := time.ParseDuration("1m")
 	cleanInterval, _ := time.ParseDuration("10s")
@@ -34,6 +35,7 @@ func TestCache_Get_With_Expiration(t *testing.T) {
 	}
 }
 
+// 缓存数据写、读 文件，UT运行完将文件删除
 func TestCache_WriteFile(t *testing.T) {
 	defaultExpired, _ := time.ParseDuration("1m")
 	cleanInterval, _ := time.ParseDuration("10s")
