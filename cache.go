@@ -13,41 +13,41 @@ import (
 
 const DefaultExpiration int64 = 30
 
-type Cache2 struct {
+type Cache struct {
 	segments [256]segment
 }
 
 // 清理过期数据项
-func (c *Cache2) ClearExpired() {
+func (c *Cache) ClearExpired() {
 	for _, s := range c.segments {
 		s.clearExpired()
 	}
 }
 
-func (c *Cache2) Set(k string, v []byte, expiration int64) error {
+func (c *Cache) Set(k string, v []byte, expiration int64) error {
 	return c.segments[hashID(k)].set(k, v, expiration)
 }
 
-func (c *Cache2) Get(k string) ([]byte, bool) {
+func (c *Cache) Get(k string) ([]byte, bool) {
 	return c.segments[hashID(k)].get(k)
 }
 
-func (c *Cache2) Add(k string, v []byte, expiration int64) error {
+func (c *Cache) Add(k string, v []byte, expiration int64) error {
 	return c.segments[hashID(k)].add(k, v, expiration)
 
 }
 
-func (c *Cache2) Delete(k string) {
+func (c *Cache) Delete(k string) {
 	c.segments[hashID(k)].del(k)
 }
 
 // 清空缓存
-func (c *Cache2) Clean() {
+func (c *Cache) Clean() {
 	for _, s := range c.segments {
 		s.clean()
 	}
 }
-func (c *Cache2) Count() int {
+func (c *Cache) Count() int {
 	var count int
 	for _, s := range c.segments {
 		count += s.count()
@@ -55,11 +55,11 @@ func (c *Cache2) Count() int {
 	return count
 }
 
-func (c *Cache2) Expired(k string) bool {
+func (c *Cache) Expired(k string) bool {
 	return c.segments[hashID(k)].expired(k)
 }
 
-func (c *Cache2) WriteFile(file string) error {
+func (c *Cache) WriteFile(file string) error {
 	f, err := os.Create(file)
 	if err != nil {
 		return err
@@ -70,7 +70,7 @@ func (c *Cache2) WriteFile(file string) error {
 	return f.Close()
 }
 
-func (c *Cache2) ReadFile(file string) error {
+func (c *Cache) ReadFile(file string) error {
 	f, err := os.Open(file)
 	if err != nil {
 		return err
@@ -82,7 +82,7 @@ func (c *Cache2) ReadFile(file string) error {
 	return f.Close()
 }
 
-func (c *Cache2) Read(r io.Reader) error {
+func (c *Cache) Read(r io.Reader) error {
 	decoder := gob.NewDecoder(r)
 	segments := make([]segment, 256)
 	err := decoder.Decode(&segments)
@@ -99,11 +99,11 @@ func (c *Cache2) Read(r io.Reader) error {
 	return err
 }
 
-func (c *Cache2) setNode(k string, n node) {
+func (c *Cache) setNode(k string, n node) {
 	c.segments[hashID(k)].setNode(k, n)
 }
 
-func (c *Cache2) Write(w io.Writer) (err error) {
+func (c *Cache) Write(w io.Writer) (err error) {
 	encoder := gob.NewEncoder(w)
 	defer func() {
 		if x := recover(); x != nil {
@@ -120,11 +120,11 @@ func hashID(k string) uint64 {
 	return murmur3.Sum64([]byte(k)) & 255
 }
 
-func NewCache2(size int) (cache *Cache2) {
+func NewCache(size int) (cache *Cache) {
 	if size < 256*1024 {
 		size = 256 * 1024
 	}
-	cache = new(Cache2)
+	cache = new(Cache)
 	for i := 0; i < 256; i++ {
 		cache.segments[i] = newSegment(size/256, i)
 	}
