@@ -3,30 +3,23 @@ package cistern
 import (
 	"testing"
 	"time"
-	"os"
 )
 
 // 从缓存中获取对象
-func TestCache_Get(t *testing.T) {
-	defaultExpired, _ := time.ParseDuration("1m")
-	cleanInterval, _ := time.ParseDuration("3s")
-	c := NewCache(defaultExpired, cleanInterval)
+func TestCache2_Get(t *testing.T) {
+	c := NewCache2(65535)
 	k1 := "k1"
 	v1 := "v1"
-	expiration, _ := time.ParseDuration("5s")
-	c.Set(k1, v1, expiration)
+	c.Set(k1, []byte(v1), 30)
 	if _, found := c.Get(k1); !found {
 		t.Errorf("not found k1")
 	}
 }
 
 // 过期数据不该被GET到
-func TestCache_Get_With_Expiration(t *testing.T) {
-	defaultExpired, _ := time.ParseDuration("1m")
-	cleanInterval, _ := time.ParseDuration("10s")
-	c := NewCache(defaultExpired, cleanInterval)
-	e, _ := time.ParseDuration("1s")
-	c.Set("name", "吴建峰", e)
+func TestCache2_Get_With_Expiration(t *testing.T) {
+	c := NewCache2(100)
+	c.Set("name", []byte("吴建峰"), 1)
 	sleep, _ := time.ParseDuration("2s")
 	time.Sleep(sleep)
 	if _, found := c.Get("name"); found {
@@ -34,23 +27,20 @@ func TestCache_Get_With_Expiration(t *testing.T) {
 	}
 }
 
-// 缓存数据写、读 文件，UT运行完将文件删除
-func TestCache_WriteFile(t *testing.T) {
-	defaultExpired, _ := time.ParseDuration("1m")
-	cleanInterval, _ := time.ParseDuration("10s")
-	c := NewCache(defaultExpired, cleanInterval)
-	e, _ := time.ParseDuration("20s")
-	c.Set("name", "吴建峰", e)
-	if err := c.WriteFile("/workspace/tmp/cistern.log"); err != nil {
-		t.Errorf("write cache to file failure:\n")
-	} else {
-		c2 := NewCache(defaultExpired, cleanInterval)
-		c2.ReadFile("/workspace/tmp/cistern.log")
-		if v, found := c2.Get("name"); !found {
-			t.Errorf("could not read from file")
-		} else {
-			t.Logf("read data:%s from file", v)
-		}
-		os.Remove("/workspace/tmp/cistern.log")
-	}
-}
+//// 缓存数据写、读 文件，UT运行完将文件删除
+//func TestCache2_WriteFile(t *testing.T) {
+//	c := NewCache2(100)
+//	c.Set("name", []byte("吴建峰"), 20)
+//	if err := c.WriteFile("/workspace/tmp/log"); err != nil {
+//		t.Errorf("write cache to file failure:\n")
+//	} else {
+//		c2 := NewCache2(100)
+//		c2.ReadFile("/workspace/tmp/log")
+//		if v, found := c2.Get("name"); !found {
+//			t.Errorf("could not read from file")
+//		} else {
+//			t.Logf("read data:%s from file", v)
+//		}
+//		os.Remove("/workspace/tmp/log")
+//	}
+//}
