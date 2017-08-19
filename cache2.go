@@ -14,7 +14,7 @@ import (
 const DefaultExpiration int64 = 30
 
 type Cache2 struct {
-	segments []segment
+	segments [256]segment
 }
 
 // 清理过期数据项
