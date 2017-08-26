@@ -11,28 +11,63 @@ const (
 
 // 定义树，默认只包含一个根节点
 type Tree struct {
-	root *TreeNode
+	root *RBTreeNode
 }
 
-func (t *Tree) insert(node *TreeNode) {
+func (t *Tree) insert(current *RBTreeNode, key string, value []byte) {
+	hash := hash(key)
+	if hash < current.hash {
+		if current.left == nil {
+			node := NewNode(key, value, hash)
+			current.left = node
+			node.parent = current
+			t.check(node)
+		} else {
+			t.insert(current.left, key, value)
+		}
+	} else if hash > current.hash {
+		if current.right == nil {
+			node := NewNode(key, value, hash)
+			current.right = node
+			node.parent = current
+			t.check(node)
+		} else {
+			t.insert(current.right, key, value)
+		}
+	} else {
+		current.value = value
+	}
+}
+
+// 根据红黑树规则 校验和调整树形结构
+func (t *Tree) check(node *RBTreeNode) {
 
 }
 
 // 定义节点
-type TreeNode struct {
-	value               []byte
+type RBTreeNode struct {
+	hash                uint32
 	key                 string
+	value               []byte
 	color               bool
-	left, right, parent *TreeNode
+	left, right, parent *RBTreeNode
 }
 
-func (tn *TreeNode) getParent() *TreeNode {
+func NewNode(key string, value []byte, hash uint32) (tNode *RBTreeNode) {
+	tNode = new(RBTreeNode)
+	tNode.key = key
+	tNode.value = value
+	tNode.hash = hash
+	return
+}
+
+func (tn *RBTreeNode) getParent() *RBTreeNode {
 	return tn.parent
 }
 
 // 树旋转，如果有根节点变动则返回变动后的根节点
-func (tn *TreeNode) rotate(leftRotate bool) (*TreeNode, error) {
-	var root *TreeNode
+func (tn *RBTreeNode) rotate(leftRotate bool) (*RBTreeNode, error) {
+	var root *RBTreeNode
 	if tn == nil {
 		return root, nil
 	}
@@ -71,4 +106,8 @@ func (tn *TreeNode) rotate(leftRotate bool) (*TreeNode, error) {
 
 	}
 	return root, nil
+}
+
+func hash(s string) uint32 {
+	return 0 // TODO
 }
