@@ -1,4 +1,4 @@
-package cistern
+package cache
 
 import (
 	"time"

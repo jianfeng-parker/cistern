@@ -1,4 +1,4 @@
-package cistern
+package tree
 
 import "errors"
 
@@ -10,11 +10,11 @@ const (
 )
 
 // 定义树，默认只包含一个根节点
-type Tree struct {
-	root *RBTreeNode
+type RBTree struct {
+	root *RBNode
 }
 
-func (t *Tree) insert(current *RBTreeNode, key string, value []byte) {
+func (t *RBTree) insert(current *RBNode, key string, value []byte) {
 	hash := hash(key)
 	if hash < current.hash {
 		if current.left == nil {
@@ -40,34 +40,34 @@ func (t *Tree) insert(current *RBTreeNode, key string, value []byte) {
 }
 
 // 根据红黑树规则 校验和调整树形结构
-func (t *Tree) check(node *RBTreeNode) {
+func (t *RBTree) check(node *RBNode) {
 
 }
 
 // 定义节点
-type RBTreeNode struct {
+type RBNode struct {
 	hash                uint32
 	key                 string
 	value               []byte
 	color               bool
-	left, right, parent *RBTreeNode
+	left, right, parent *RBNode
 }
 
-func NewNode(key string, value []byte, hash uint32) (tNode *RBTreeNode) {
-	tNode = new(RBTreeNode)
+func NewNode(key string, value []byte, hash uint32) (tNode *RBNode) {
+	tNode = new(RBNode)
 	tNode.key = key
 	tNode.value = value
 	tNode.hash = hash
 	return
 }
 
-func (tn *RBTreeNode) getParent() *RBTreeNode {
+func (tn *RBNode) getParent() *RBNode {
 	return tn.parent
 }
 
 // 树旋转，如果有根节点变动则返回变动后的根节点
-func (tn *RBTreeNode) rotate(leftRotate bool) (*RBTreeNode, error) {
-	var root *RBTreeNode
+func (tn *RBNode) rotate(leftRotate bool) (*RBNode, error) {
+	var root *RBNode
 	if tn == nil {
 		return root, nil
 	}
