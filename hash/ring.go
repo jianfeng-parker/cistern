@@ -18,8 +18,26 @@ type node struct {
 
 type Ring struct {
 	slots   int
-	nodes   []node
+	nodes   nodes
 	weights map[string]int
+}
+
+type nodes []node
+
+func (ns nodes) Len() int {
+	return len(ns)
+}
+
+func (ns nodes) Less(i, j int) bool {
+	return ns[i].hash < ns[j].hash
+}
+
+func (ns nodes) Swap(i, j int) {
+	ns[i], ns[j] = ns[j], ns[i]
+}
+
+func (ns nodes) Sort() {
+	sort.Sort(ns)
 }
 
 func NewRing(slots int) (r *Ring) {
@@ -100,7 +118,7 @@ func (r *Ring) build() {
 			sha.Reset()
 		}
 	}
-	sort(r.nodes)
+	r.nodes.Sort()
 }
 
 func getHash(bs []byte) uint32 {
